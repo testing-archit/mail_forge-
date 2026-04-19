@@ -1,5 +1,6 @@
 # MailForge
 
+
 MailForge is a secure, end-to-end encrypted (E2EE) mail service modeled similarly to Gmail, but with cryptographic security built in as a first-class citizen. This project includes a modern React frontend with Tailwind CSS and a microservice-ready backend data schema powered by Supabase PostgreSQL.
 
 ## Architecture Overview
