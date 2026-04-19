@@ -14,7 +14,7 @@ export default function Footer() {
           {/* Logo */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded bg-navy" />
+              <img src="/logo.png" alt="MailForge Logo" className="w-8 h-8 object-contain rounded-lg" />
               <span className="text-xl font-bold font-serif text-white">Mailforge</span>
             </div>
             <p className="text-sm text-gray-400">

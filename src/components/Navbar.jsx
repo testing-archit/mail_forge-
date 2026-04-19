@@ -29,7 +29,7 @@ export default function Navbar({ onNavigate }) {
           onClick={() => onNavigate ? onNavigate('home') : null}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
-          <div className={`w-8 h-8 rounded ${isScrolled ? 'bg-navy' : 'bg-navy'}`} />
+          <img src="/logo.png" alt="MailForge Logo" className="w-10 h-10 object-contain rounded-xl" />
           <span className={`text-xl font-bold font-serif ${isScrolled ? 'text-navy' : 'text-white'}`}>
             Mailforge
           </span>
