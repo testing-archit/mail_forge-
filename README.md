@@ -1,215 +1,120 @@
-# MailForge Frontend
+# MailForge
 
-Professional React-based frontend for the MailForge Secure Email Management System.
+MailForge is a secure, end-to-end encrypted (E2EE) mail service modeled similarly to Gmail, but with cryptographic security built in as a first-class citizen. This project includes a modern React frontend with Tailwind CSS and a microservice-ready backend data schema powered by Supabase PostgreSQL.
 
-## Features
+## Architecture Overview
 
-- 🎨 **Modern UI Design** - Professional gradient-based interface
-- 🔐 **Secure Authentication** - JWT token-based login/registration
-- 📧 **Email Management** - Inbox, compose, and email viewing
-- 👤 **User Dashboard** - Profile management and settings
-- 🔒 **Security Settings** - Two-factor auth, session management
-- 📱 **Responsive Design** - Works on desktop, tablet, and mobile
-- ⚡ **Fast & Smooth** - React-based single-page application
+The system is designed with a **Microservices Architecture** mindset, integrating tightly with a centralized **Supabase PostgreSQL** database.
 
-## Tech Stack
+### Core Components
 
-- **React 18.2.0** - UI library
-- **React Router 6.14.0** - Client-side routing
-- **Axios 1.4.0** - HTTP client
-- **Lucide React 0.263.1** - Icon library
-- **CSS3** - Styling with animations and gradients
+1. **Frontend (React + Vite + Tailwind)**
+   - Manages the user interface, authentication flows, and real-time SSE subscriptions.
+   - Responsible for **Client-Side Encryption (AES)**. Sensitive email bodies are encrypted using `crypto-js` before the payload is dispatched to the backend, ensuring zero-knowledge privacy for the backend services.
 
-## Installation
+2. **Database (Supabase PostgreSQL)**
+   - Acts as the central source of truth for the microservices.
+   - Contains schemas for Users, User Configuration, Mails, Attachments, and OTP tracking.
+   - Employs Row Level Security (RLS) to ensure data isolation.
 
-### Prerequisites
+3. **Backend Microservices (Spring Boot / Node - Designed For)**
+   - **API Gateway (Port 8080)**: Routes traffic to respective services. Handles SSE connections `/sse/subscribe/{deviceId}`.
+   - **Auth Service (Port 8081)**: Manages JWT generation and OTP validation.
+   - **User Service (Port 8082)**: Manages user creation, profiles, and configurations.
+   - **Mail Service (Port 8083)**: Manages sending emails, retrieving inboxes, and cryptographic hash verification.
 
-- Node.js 14+ 
-- npm or yarn
+### Database Schema (ERD)
 
-### Setup
+```mermaid
+erDiagram
+    USERS ||--o{ USER_CONFIG : "has one"
+    USERS ||--o{ OTPS : "has many"
+    USERS ||--o{ MAILS : "sends/receives"
+    MAILS ||--o{ MAIL_ATTACHMENTS : "has many"
 
-1. Install dependencies:
+    USERS {
+        UUID id PK
+        VARCHAR username "Creates @mailforge.com alias"
+        VARCHAR email "Recovery Email"
+        VARCHAR password_hash
+        BOOLEAN is_verified
+    }
+
+    USER_CONFIG {
+        UUID user_id FK
+        BOOLEAN auto_archive
+        BOOLEAN auto_reply
+        BOOLEAN encryption_enabled
+        BOOLEAN signature_enabled
+    }
+
+    MAILS {
+        UUID id PK
+        VARCHAR from_address
+        VARCHAR to_address
+        VARCHAR subject
+        TEXT body "Can contain AES Ciphertext"
+        BOOLEAN is_read
+        VARCHAR hash "Integrity Verification Hash"
+        TIMESTAMP received_at
+    }
+
+    MAIL_ATTACHMENTS {
+        UUID id PK
+        UUID mail_id FK
+        VARCHAR name
+        TEXT content "Base64"
+    }
+
+    OTPS {
+        UUID id PK
+        VARCHAR email
+        VARCHAR code
+        TIMESTAMP expires_at
+    }
+```
+
+## Security & Encryption Features
+
+Security is the main feature of MailForge.
+
+1. **Client-Side AES Encryption**
+   - Users can toggle "End-to-End Encryption" when composing an email.
+   - The email body is encrypted directly in the browser using AES (Advanced Encryption Standard) via `crypto-js` with a secret user-defined passphrase.
+   - The backend API only receives the encrypted payload (marked with `-----BEGIN MAILFORGE ENCRYPTED MESSAGE-----`).
+   - The recipient must enter the exact symmetric passphrase to decrypt the message locally in their browser.
+
+2. **Integrity Checking**
+   - The Mail Service stores a cryptographic `hash` of the email when it is received.
+   - When viewing an email, the frontend automatically hits the `GET /mail/{id}/verify` endpoint to verify that the email data has not been tampered with. If verified, a green "Integrity Verified" badge is displayed.
+
+3. **OTP Account Verification**
+   - New accounts require external email OTP verification before they can log in, mitigating spam and bot account creation.
+
+## Setup Instructions
+
+### 1. Database Setup
+A full schema and mock data script has been provided in the repository.
+1. Navigate to your Supabase Dashboard: `https://hfmsjzbvsmigbdpkpshb.supabase.co`
+2. Open the **SQL Editor**.
+3. Copy the entire contents of the `supabase_setup.sql` file located in the root of this project.
+4. Paste it into a new query and click **RUN**.
+   - *This will instantly build all tables, setup basic RLS policies, and inject mock user data and emails into your database.*
+
+### 2. Frontend Environment Variables
+Ensure your `.env` file contains your Supabase credentials if your frontend or serverless functions need direct connection, though primary API routing is expected to go through the microservices.
+
+```env
+VITE_SUPABASE_URL=https://hfmsjzbvsmigbdpkpshb.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_AmeoDnfVfT7SW3tf4Y3ztw_ZBlGmA_D
+```
+
+### 3. Running the App
 ```bash
 npm install
+npm run dev
 ```
 
-2. Create `.env` file (optional):
-```env
-REACT_APP_API_URL=http://localhost:9090
-```
-
-3. Start development server:
-```bash
-npm start
-```
-
-The app will open at `http://localhost:3000`
-
-## Project Structure
-
-```
-frontend/
-├── public/
-│   └── index.html          # Main HTML file
-├── src/
-│   ├── pages/
-│   │   ├── LandingPage.js  # Homepage with features
-│   │   ├── AuthPage.js     # Login/Register form
-│   │   ├── Dashboard.js    # User dashboard
-│   │   └── EmailClient.js  # Email management interface
-│   ├── App.js              # Main app component
-│   ├── App.css             # Global styles
-│   ├── index.js            # React entry point
-│   └── index.css           # Global CSS (if exists)
-├── package.json            # Dependencies
-└── README.md               # This file
-```
-
-## Pages
-
-### Landing Page
-- Hero section with value proposition
-- Features showcase
-- Security highlights
-- Tech stack information
-- Call-to-action buttons
-
-### Auth Page
-- User registration form
-- User login form
-- Password visibility toggle
-- Form validation
-- Social auth buttons (UI ready)
-
-### Dashboard
-- User profile management
-- Password change
-- Security settings (2FA, session timeout)
-- Notification preferences
-- Storage usage
-- Account information
-
-### Email Client
-- Inbox with email list
-- Email search
-- Compose new email
-- Email detail view
-- Encryption toggle
-- Attachment support
-- Sidebar navigation
-
-## API Integration
-
-The frontend communicates with the API Gateway on `http://localhost:9090`:
-
-### Key Endpoints
-
-- `POST /app/v1/user/register` - User registration
-- `POST /app/v1/user/login` - User login
-- `GET /app/v1/users/profile` - Get user profile
-- `GET /app/v1/mail/emails` - Get inbox
-- `POST /app/v1/mail/send` - Send email
-
-All requests to protected endpoints include JWT token in Authorization header.
-
-## Authentication Flow
-
-1. User registers or logs in on AuthPage
-2. Backend returns JWT token
-3. Token stored in localStorage
-4. Token included in all subsequent API requests
-5. Dashboard/Email routes only accessible with valid token
-6. Logout clears token and user data
-
-## Styling
-
-### Color Scheme
-
-- **Primary Gradient**: #667eea → #764ba2 (Purple/Blue)
-- **Dark**: #1a202c
-- **Light**: #f7fafc
-- **Error**: #fc5c65
-- **Success**: #2dd4c0
-
-### Responsive Breakpoints
-
-- Desktop: 1024px+
-- Tablet: 768px - 1023px
-- Mobile: Below 768px
-
-## Building for Production
-
-```bash
-npm run build
-```
-
-Creates optimized production build in `build/` directory.
-
-## Development Tips
-
-- Use React DevTools for debugging
-- Check browser console for API errors
-- Verify API Gateway is running on port 9090
-- Keep token refresh logic in mind for long sessions
-
-## Environment Variables
-
-Create `.env` file in frontend root:
-
-```env
-REACT_APP_API_URL=http://localhost:9090
-REACT_APP_API_TIMEOUT=5000
-```
-
-## Common Issues
-
-### "Cannot connect to API"
-- Check API Gateway is running (port 9090)
-- Verify backend services are registered with Eureka
-- Check network tab in browser DevTools
-
-### "Unauthorized (401)"
-- Token may be expired
-- Try logging out and logging back in
-- Check token in localStorage
-
-### "CORS Error"
-- API Gateway must have CORS configured
-- Frontend and backend must match in browser requirements
-
-## Performance
-
-- Code splitting with React Router
-- Lazy loading of components
-- CSS animations use GPU acceleration
-- Optimized bundle size ~150KB
-
-## Browser Support
-
-- Chrome/Edge 90+
-- Firefox 88+
-- Safari 14+
-- Mobile browsers (iOS Safari, Chrome Mobile)
-
-## Contributing
-
-- Follow existing code style
-- Create components for reusability
-- Use CSS modules or scoped CSS for styling
-- Keep components focused and single-responsibility
-
-## License
-
-MailForge - Secure Email Management System
-
-## Support
-
-For issues and questions:
-1. Check documentation
-2. Review API logs
-3. Check browser console
-4. Verify all services are running
-# MailForge_Frontend
-# mail_forge-
-# mail_forge-
+You can log in using the mock data generated by the SQL script:
+- **Username**: `alice`
+- **Password**: `password` (Note: Ensure your mock backend accepts this depending on the Auth service implementation)

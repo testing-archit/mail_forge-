@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  color: #1f2937;
+  background: #ffffff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-navy text-white rounded-lg font-semibold transition-all duration-300 hover:shadow-lg active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply px-6 py-3 border-2 border-white text-white rounded-lg font-semibold transition-all duration-300 hover:bg-white hover:text-navy active:scale-95;
+  }
+
+  .btn-outline {
+    @apply px-6 py-3 border-2 border-navy text-navy rounded-lg font-semibold transition-all duration-300 hover:bg-navy hover:text-white active:scale-95;
+  }
+
+  .glass {
+    @apply backdrop-blur-md bg-white/10 border border-white/20;
+  }
+
+  .glass-dark {
+    @apply backdrop-blur-md bg-navy2/40 border border-white/10;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-brand-gold to-brand-gold/60 bg-clip-text text-transparent;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:border-brand-blue/40;
+  }
+}
