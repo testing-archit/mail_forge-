@@ -14,7 +14,7 @@ export default function MailClientMockup() {
           <div className="w-3 h-3 rounded-full bg-red-500" />
           <div className="w-3 h-3 rounded-full bg-yellow-500" />
           <div className="w-3 h-3 rounded-full bg-green-500" />
-          <div className="ml-4 text-xs text-gray-400">mail.akshatrastogi.co.in</div>
+          <div className="ml-4 text-xs text-gray-400">architgupta@mailforge.com</div>
         </div>
 
         {/* Content */}
@@ -30,11 +30,10 @@ export default function MailClientMockup() {
               ].map((item) => (
                 <div
                   key={item.label}
-                  className={`px-3 py-2 rounded text-sm font-medium flex items-center justify-between ${
-                    item.label === 'Inbox'
+                  className={`px-3 py-2 rounded text-sm font-medium flex items-center justify-between ${item.label === 'Inbox'
                       ? 'bg-brand-blue text-white'
                       : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+                    }`}
                 >
                   {item.label}
                   {item.badge > 0 && (
@@ -56,9 +55,8 @@ export default function MailClientMockup() {
             ].map((email, idx) => (
               <div
                 key={idx}
-                className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
-                  idx === 0 ? 'bg-blue-50 border-l-4 border-brand-blue' : ''
-                }`}
+                className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${idx === 0 ? 'bg-blue-50 border-l-4 border-brand-blue' : ''
+                  }`}
               >
                 <div className="font-semibold text-sm text-gray-900">{email.from}</div>
                 <div className="text-sm text-gray-600 truncate">{email.subject}</div>
